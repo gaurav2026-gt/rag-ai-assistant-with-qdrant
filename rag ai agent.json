@@ -1,0 +1,224 @@
+{
+  "name": "rag ai agent",
+  "nodes": [
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "triggerOn": "specificFolder",
+        "folderToWatch": {
+          "__rl": true,
+          "value": "1daFfiXq_TEXG15b2wzhwqYPwwtmIiK4N",
+          "mode": "list",
+          "cachedResultName": "rag sample data ",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/1daFfiXq_TEXG15b2wzhwqYPwwtmIiK4N"
+        },
+        "event": "fileCreated",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTrigger",
+      "typeVersion": 1,
+      "position": [
+        -384,
+        0
+      ],
+      "id": "f773daea-69a9-4502-a96f-155189aeac25",
+      "name": "Google Drive Trigger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zidS0S5XUxr1cudz",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -176,
+        0
+      ],
+      "id": "f3719ddb-5d5d-43ba-9280-88190cc22ea3",
+      "name": "Download file",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "zidS0S5XUxr1cudz",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "dataType": "binary",
+        "textSplittingMode": "custom",
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "file-name",
+                "value": "={{ $json.name }}"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        160,
+        208
+      ],
+      "id": "c62e761e-f8b4-40ee-b136-36c2c4202270",
+      "name": "Default Data Loader"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "rag-collection",
+          "mode": "list",
+          "cachedResultName": "rag-collection"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        112,
+        0
+      ],
+      "id": "b7e2470a-3499-41b5-91cb-8be558ff3892",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "MYZjqnj05Z0iipyU",
+          "name": "Qdrant account"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.embeddingsGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -80,
+        224
+      ],
+      "id": "bcd7f385-eef7-4b75-b789-6f8ff8338344",
+      "name": "Embeddings Google Gemini",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "9JtaHGm3nUs0SYrJ",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkSize": 500,
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        256,
+        416
+      ],
+      "id": "383f7abf-6dab-4f49-a94c-faa50f9ea0bf",
+      "name": "Recursive Character Text Splitter"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Google Drive Trigger": {
+      "main": [
+        [
+          {
+            "node": "Download file",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download file": {
+      "main": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings Google Gemini": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recursive Character Text Splitter": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Default Data Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "b7a6b575-aa40-4c16-8988-aeb828740e97",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "3a26bbf238c15c22335fa7c0e066a33e62a20d1d2b6dbe58f86f0896b2448c6b"
+  },
+  "id": "FWXuOkz8XsJ75j0X",
+  "tags": [
+    {
+      "updatedAt": "2026-06-15T07:34:51.239Z",
+      "createdAt": "2026-06-15T07:34:51.239Z",
+      "id": "BdhYtjYBJMk4C6qU",
+      "name": "pre data processing"
+    }
+  ]
+}
