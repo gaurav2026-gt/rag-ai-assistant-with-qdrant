@@ -106,9 +106,13 @@ rag-ai-assistant-with-qdrant/
 
 ## 📸 Workflow Screenshot
 
-> Replace the image below with your uploaded screenshot.
+## 📸 Workflow Screenshots
 
-![Workflow](workflow.png)
+### RAG Pipeline
+![RAG Pipeline](rag-pipeline.png)
+
+### AI Agent Workflow
+![RAG AI Agent](rag-ai-agent.png)
 
 ---
 
